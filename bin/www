@@ -1,0 +1,155 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+
+const app = require('../app');
+const debug = require('debug')('relaxg-api-reworked:server');
+const http = require('http');
+const {WebSocketServer} = require("ws");
+const {Client} = require("ssh2");
+
+const hostIp = process.env.DOCKER_GATEWAY_HOST;
+const hostUser = process.env.HOST_USER_NAME;
+
+/**
+ * Get port from environment and store in Express.
+ */
+const port = normalizePort(process.env.PORT || '8082');
+app.set('port', port);
+
+/**
+ * Create HTTP server and websocket.
+ */
+const server = http.createServer(app);
+const websocketServer = new WebSocketServer({server: server});
+let intervals = [];
+websocketServer.on('connection', (socket) => {
+    console.log('Client connected to websocket api');
+    websocketServer.clients.forEach((client) => {
+        client.send(JSON.stringify('hey there'));
+        fetchProgress(client);
+        intervals.push(setInterval(() => {
+            fetchProgress(client);
+            console.log('Active intervals : ' + intervals)
+        }, 30000));
+    });
+
+    socket.on('message', (msg) => {
+        console.log('Received message', msg);
+    })
+
+    socket.on('close', () => {
+        console.log('Client disconnected from websocket api ');
+        Object.values(intervals).forEach((interval) => {
+            clearInterval(interval);
+            intervals.splice(intervals.indexOf(interval), 1);
+            console.log('Interval ' + interval + ' cleared');
+        });
+    })
+})
+
+/**
+ * Fetch progress on host
+ * @param client
+ * @param intervalId
+ */
+function fetchProgress(client, intervalId) {
+    const conn = new Client();
+    conn.on('ready', () => {
+        //console.log('Client :: ready :: ');
+        conn.exec('fetch_all_jobs_status.sh', (err, stream) => {
+            if (err) throw err;
+            stream.on('close', (code, signal) => {
+                //console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
+                conn.end();
+            }).on('data', (data) => {
+                //console.log(data.toString());
+                client.send(JSON.stringify(data.toString().replaceAll("\n", "").split("|")));
+            }).stderr.on('data', (data) => {
+                //console.log('STDERR: ' + data);
+            });
+        });
+    }).connect({
+        host: hostIp,
+        port: 22,
+        username: hostUser,
+        password: process.env.HOST_USER_PASS
+    });
+}
+
+// Helper function to send WebSocket message to all clients
+function broadcast(data) {
+    websocketServer.clients.forEach((client) => {
+        client.send(JSON.stringify(data));
+    });
+}
+
+/**
+ * Listen on provided port, on all network interfaces.
+ */
+server.listen(port);
+server.on('error', onError);
+server.on('listening', onListening);
+
+/**
+ * Normalize a port into a number, string, or false.
+ */
+function normalizePort(val) {
+    let port = parseInt(val, 10);
+
+    if (isNaN(port)) {
+        // named pipe
+        return val;
+    }
+
+    if (port >= 0) {
+        // port number
+        return port;
+    }
+
+    return false;
+}
+
+/**
+ * Event listener for HTTP server "error" event.
+ */
+
+function onError(error) {
+    if (error.syscall !== 'listen') {
+        throw error;
+    }
+
+    let bind = typeof port === 'string'
+        ? 'Pipe ' + port
+        : 'Port ' + port;
+
+    // handle specific listen errors with friendly messages
+    switch (error.code) {
+        case 'EACCES':
+            console.error(bind + ' requires elevated privileges');
+            process.exit(1);
+            break;
+        case 'EADDRINUSE':
+            console.error(bind + ' is already in use');
+            process.exit(1);
+            break;
+        default:
+            throw error;
+    }
+}
+
+/**
+ * Event listener for HTTP server "listening" event.
+ */
+
+function onListening() {
+    let addr = server.address();
+    let bind = typeof addr === 'string'
+        ? 'pipe ' + addr
+        : 'port ' + addr.port;
+    debug('Listening on ' + bind);
+}
+
+module.exports = {websocketServer, broadcast};

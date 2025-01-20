@@ -1,0 +1,22 @@
+services:
+  backend:
+    container_name: backend
+    build:
+      context: .
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - DISPLAY=${DISPLAY}
+      - NODE_OPTIONS=--max-old-space-size=4096
+    ports:
+      - "8082:8082"
+    networks:
+      - shared_network
+    volumes:
+      - ~/.ssh:/root/.ssh
+      - ~/Documents/Mangas/covers:/public
+
+networks:
+  shared_network:
+    external: true
