@@ -16,6 +16,6 @@ WORKDIR /
 COPY --from=deps node_modules ./node_modules
 COPY . .
 
-RUN apk add --update --no-cache openssh sshpass
+RUN apk add --update --no-cache
 
 CMD ["node", "--watch", "bin/www"]

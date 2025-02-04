@@ -53,7 +53,7 @@ exports.jobsPOST = function (body) {
             const conn = new ssh2.Client();
             conn.on('ready', () => {
                 console.log('Client :: ready :: ' + pathOnHost);
-                conn.exec('job_launcher.sh -p \"' + pathOnHost + '\"', {x11: true}, (err, stream) => {
+                conn.exec(`bash /home/${hostUser}/relax_tools/scripts/job_launcher.sh -p "` + pathOnHost + '\"', {x11: true}, (err, stream) => {
                     if (err) throw err;
                     stream.on('close', (code, signal) => {
                         console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);

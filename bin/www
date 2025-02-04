@@ -48,6 +48,10 @@ websocketServer.on('connection', (socket) => {
             console.log('Interval ' + interval + ' cleared');
         });
     })
+
+    socket.on("error", (err) => {
+        console.log(err.stack);
+    });
 })
 
 /**
@@ -59,7 +63,7 @@ function fetchProgress(client, intervalId) {
     const conn = new Client();
     conn.on('ready', () => {
         //console.log('Client :: ready :: ');
-        conn.exec('fetch_all_jobs_status.sh', (err, stream) => {
+        conn.exec('bash /home/loicd/relax_tools/scripts/fetch_all_jobs_status.sh', (err, stream) => {
             if (err) throw err;
             stream.on('close', (code, signal) => {
                 //console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
