@@ -25,31 +25,28 @@ app.set('port', port);
 const server = http.createServer(app);
 const websocketServer = new WebSocketServer({server: server});
 let intervals = [];
-websocketServer.on('connection', (socket) => {
+websocketServer.on('connection', (websocketClient) => {
     console.log('Client connected to websocket api');
-    websocketServer.clients.forEach((client) => {
-        client.send(JSON.stringify('hey there'));
-        fetchProgress(client);
-        intervals.push(setInterval(() => {
-            fetchProgress(client);
-            console.log('Active intervals : ' + intervals)
-        }, 30000));
-    });
+    websocketClient.send(JSON.stringify('hey there'));
+    fetchProgress(websocketClient);
+    let currentInterval = (setInterval(() => {
+        fetchProgress(websocketClient);
+        console.log('Active intervals : ' + intervals)
+    }, 30000));
+    intervals.push(currentInterval);
 
-    socket.on('message', (msg) => {
+    websocketClient.on('message', (msg) => {
         console.log('Received message', msg);
     })
 
-    socket.on('close', () => {
+    websocketClient.on('close', () => {
         console.log('Client disconnected from websocket api ');
-        Object.values(intervals).forEach((interval) => {
-            clearInterval(interval);
-            intervals.splice(intervals.indexOf(interval), 1);
-            console.log('Interval ' + interval + ' cleared');
-        });
+        clearInterval(currentInterval);
+        intervals.splice(intervals.indexOf(currentInterval), 1);
+        console.log('Interval ' + currentInterval + ' cleared');
     })
 
-    socket.on("error", (err) => {
+    websocketClient.on("error", (err) => {
         console.log(err.stack);
     });
 })
