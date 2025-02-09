@@ -9,6 +9,7 @@ const debug = require('debug')('relaxg-api-reworked:server');
 const http = require('http');
 const {WebSocketServer} = require("ws");
 const {Client} = require("ssh2");
+const {neon} = require("@neondatabase/serverless");
 
 const hostIp = process.env.DOCKER_GATEWAY_HOST;
 const hostUser = process.env.HOST_USER_NAME;
@@ -57,6 +58,7 @@ websocketServer.on('connection', (websocketClient) => {
  * @param intervalId
  */
 function fetchProgress(client, intervalId) {
+    const sql = neon(process.env.DATABASE_URL);
     const conn = new Client();
     conn.on('ready', () => {
         //console.log('Client :: ready :: ');
@@ -65,7 +67,7 @@ function fetchProgress(client, intervalId) {
             stream.on('close', (code, signal) => {
                 //console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
                 conn.end();
-            }).on('data', (data) => {
+            }).on('data', async (data) => {
                 //console.log(data.toString());
                 client.send(JSON.stringify(data.toString().replaceAll("\n", "").split("|")));
             }).stderr.on('data', (data) => {

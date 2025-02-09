@@ -26,6 +26,15 @@ router.get('/', function (req, res, next) {
  * job_id String The job identifier
  * returns Job
  **/
+router.post('/:jobId/resume', function (req, res, next) {
+    jobsService.jobs_jobResumeGET(req.params.jobId)
+        .then(function (response) {
+            utils.writeJson(res, response);
+        })
+        .catch(function (response) {
+            utils.writeJson(res, response);
+        })
+})
 
 /**
  * Send a CTRL+C signal to the ssh tunnel used for the job

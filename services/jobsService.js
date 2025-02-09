@@ -27,6 +27,16 @@ exports.jobsGET = function (page, limit) {
     });
 }
 
+exports.jobs_jobResumeGET = function (jobId) {
+    return new Promise(async function (resolve, reject) {
+        const {broadcast} = require('../bin/www');
+        const emitter = new EventEmitter();
+        const ssh2 = require('ssh2');
+
+        broadcast("Resuming job " + jobId);
+    })
+}
+
 exports.jobsPOST = function (body) {
     return new Promise(async function (resolve, reject) {
         const {broadcast} = require('../bin/www');
@@ -37,6 +47,7 @@ exports.jobsPOST = function (body) {
         let hostUser = process.env.HOST_USER_NAME;
         let pathOnHost = undefined;
         let titleName = undefined;
+        let titleLastPid = undefined;
 
         // Connects to DB and push to it
         const sql = neon(process.env.DATABASE_URL);
@@ -53,11 +64,10 @@ exports.jobsPOST = function (body) {
             const conn = new ssh2.Client();
             conn.on('ready', () => {
                 console.log('Client :: ready :: ' + pathOnHost);
-                conn.exec(`bash /home/${hostUser}/relax_tools/scripts/job_launcher.sh -p "` + pathOnHost + '\"', {x11: true}, (err, stream) => {
+                conn.exec(`bash /home/${hostUser}/relax_tools/scripts/job_launcher.sh -p "` + pathOnHost + '\" &', {x11: true}, (err, stream) => {
                     if (err) throw err;
                     stream.on('close', (code, signal) => {
-                        console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
-                        conn.end();
+                        console.log('Stream :: close signal (pursuing) :: code: ' + code + ', signal: ' + signal);
                     }).on('data', async (data) => {
                         console.log(data.toString());
                         lastPid = data.toString();
