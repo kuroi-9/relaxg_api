@@ -26,8 +26,8 @@ router.get('/', function (req, res, next) {
  * job_id String The job identifier
  * returns Job
  **/
-router.post('/:jobId/resume', function (req, res, next) {
-    jobsService.jobs_jobResumeGET(req.params.jobId)
+router.post('/resume/', function (req, res, next) {
+    jobsService.jobs_jobResumePOST(req.body)
         .then(function (response) {
             utils.writeJson(res, response);
         })

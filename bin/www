@@ -33,7 +33,7 @@ websocketServer.on('connection', (websocketClient) => {
     let currentInterval = (setInterval(() => {
         fetchProgress(websocketClient);
         console.log('Active intervals : ' + intervals)
-    }, 30000));
+    }, 10000));
     intervals.push(currentInterval);
 
     websocketClient.on('message', (msg) => {
