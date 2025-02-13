@@ -42,6 +42,17 @@ router.post('/resume/', function (req, res, next) {
  * job_id String The job identifier
  * returns Job
  **/
+router.post('/stop/', function (req, res, next) {
+    jobsService.jobs_jobStopPOST(req.body)
+        .then(function (response) {
+            utils.writeJson(res, response);
+        })
+        .catch(function (response) {
+            utils.writeJson(res, response);
+        })
+})
+
+
 
 /**
  * Add a new job to the manager and put a title in a \"working\" state, the job starts right away
