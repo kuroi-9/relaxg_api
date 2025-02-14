@@ -39,8 +39,8 @@ router.post('/resume/', function (req, res, next) {
 /**
  * Send a CTRL+C signal to the ssh tunnel used for the job
  *
- * job_id String The job identifier
- * returns Job
+ * body Job  (optional)
+ * no response value expected for this operation
  **/
 router.post('/stop/', function (req, res, next) {
     jobsService.jobs_jobStopPOST(req.body)
@@ -52,7 +52,21 @@ router.post('/stop/', function (req, res, next) {
         })
 })
 
-
+/**
+ * Delete a job
+ * 
+ * body Job  (optional)
+ * no response value expected for this operation
+ */
+router.post('/delete/', function (req, res, next) {
+    jobsService.jobs_jobDeletePOST(req.body)
+        .then(function (response) {
+            utils.writeJson(res, response);
+        })
+        .catch(function (response) {
+            utils.writeJson(res, response);
+        })
+})
 
 /**
  * Add a new job to the manager and put a title in a \"working\" state, the job starts right away
