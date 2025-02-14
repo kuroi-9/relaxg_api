@@ -17,7 +17,8 @@ exports.titlesGET = function (page, limit, status) {
         // Existing paths containing titles on host
         const statusPaths = {
             "Releasing": "/home/loicd/Documents/Mangas/Weekly/",
-            "Completed": "/home/loicd/Documents/Mangas/ENG_no_DRM/",
+            "Stuff": "/home/loicd/Documents/Mangas/ENG_no_DRM/",
+            "Completed": "/home/loicd/Documents/Mangas/Completed/",
         };
         let statusPathFetched = {};
 
