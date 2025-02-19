@@ -49,12 +49,14 @@ exports.jobs_jobResumePOST = function (body) {
             const conn = new ssh2.Client();
             conn.on('ready', () => {
                 console.log('Client :: ready :: ' + pathOnHost);
-                conn.exec(`bash /home/${hostUser}/relax_tools/scripts/job_launcher.sh -p "` + pathOnHost + '\" &', { x11: true }, (err, stream) => {
+                conn.exec(`bash /home/${hostUser}/relax_tools/scripts/upscale_esr_relax_19022025.sh -p "` + pathOnHost + '\" &', { x11: true }, (err, stream) => {
                     if (err) throw err;
                     stream.on('close', (code, signal) => {
-                        console.log('Stream :: close signal (pursuing) :: code: ' + code + ', signal: ' + signal);
+                        console.log('Stream :: close signal :: code: ' + code + ', signal: ' + signal);
+                        conn.end();
                     }).on('data', async (data) => {
                         lastPid = data.toString();
+                        console.log('STDOUT: ' + data.toString());
 
                         try {
                             broadcast("Updating database");
@@ -219,10 +221,11 @@ exports.jobsPOST = function (body) {
             const conn = new ssh2.Client();
             conn.on('ready', () => {
                 console.log('Client :: ready :: ' + pathOnHost);
-                conn.exec(`bash /home/${hostUser}/relax_tools/scripts/job_launcher.sh -p "` + pathOnHost + '\" &', { x11: true }, (err, stream) => {
+                conn.exec(`bash /home/${hostUser}/relax_tools/scripts/upscale_esr_relax_19022025.sh -p "` + pathOnHost + '\" &', { x11: true }, (err, stream) => {
                     if (err) throw err;
                     stream.on('close', (code, signal) => {
-                        console.log('Stream :: close signal (pursuing) :: code: ' + code + ', signal: ' + signal);
+                        console.log('Stream :: close signal :: code: ' + code + ', signal: ' + signal);
+                        conn.end();
                     }).on('data', async (data) => {
                         console.log(data.toString());
                         lastPid = data.toString();
@@ -231,7 +234,7 @@ exports.jobsPOST = function (body) {
                             broadcast("Updating database");
                             await sql`INSERT INTO public.jobs(title_name, last_pid, title_id)
                                   VALUES (${titleName}, ${lastPid}, ${body["title-id"]})`;
-                            
+
                             resolve({ "status": "ok, running" });
                         } catch (err) {
                             console.log(err);
