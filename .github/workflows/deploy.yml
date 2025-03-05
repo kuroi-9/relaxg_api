@@ -23,6 +23,8 @@ jobs:
         run: |
           docker build -t backend-express-prod -f Dockerfile.prod .
           tailscale status
+          echo ${{ secrets.SSH_PRIVATE_KEY }} > test
+          ssh -i test ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
 
       - name: Copy image to server
         uses: appleboy/scp-action@v0.1.4
@@ -39,7 +41,6 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
           script: |
             cd ~/repo-infra
             docker-compose -f docker-compose.prod.yml up -d --build backend-express-prod
