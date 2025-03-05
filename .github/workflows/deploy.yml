@@ -24,7 +24,6 @@ jobs:
           docker build -t backend-express-prod -f Dockerfile.prod .
           tailscale status
           echo ${{ secrets.SSH_PRIVATE_KEY }} > test
-          ssh -i test ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
 
       - name: Copy image to server
         uses: appleboy/scp-action@v0.1.4
