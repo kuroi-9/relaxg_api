@@ -21,8 +21,8 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t backend-express-prod -f Dockerfile.prod .
+          docker build -t relaxg-backend -f Dockerfile.prod .
 
       - name: Push Docker image
         run: |
-          docker push kuroi9/relaxg-backend:tagname
+          docker push kuroi9/relaxg-backend:latest
