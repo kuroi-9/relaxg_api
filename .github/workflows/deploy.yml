@@ -22,6 +22,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t backend-express-prod -f Dockerfile.prod .
+          tailscale status
 
       - name: Copy image to server
         uses: appleboy/scp-action@v0.1.4
