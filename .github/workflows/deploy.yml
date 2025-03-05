@@ -24,6 +24,15 @@ jobs:
           docker build -t backend-express-prod -f Dockerfile.prod .
           tailscale status
 
+      - name: Copy single file to remote
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: "Dockerfile.prod"
+          remote: "~/repo-infra/"
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASS }}
+
       - name: Copy image to server
         uses: appleboy/scp-action@v0.1.4
         with:
