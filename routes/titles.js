@@ -20,14 +20,18 @@ let titlesService = require('../services/titlesService');
  * returns object
  **/
 
-router.get('/:titleId', function (req, res, next) {
-    titlesService.titles_titleGET(req.params.titleId)
-        .then(function (response) {
-            utils.writeJson(res, response);
+router.get('/:titleId', async function (req, res, next) {
+    if (await utils.isAuthenticated(req)) {
+        titlesService.titles_titleGET(req.params.titleId)
+            .then(function (response) {
+                utils.writeJson(res, response);
         })
         .catch(function (response) {
             utils.writeJson(res, response);
-        })
+            })
+    } else {
+        res.status(401).json({ error: "Unauthorized" });
+    }
 })
 
 /**
@@ -45,14 +49,18 @@ router.get('/:titleId', function (req, res, next) {
  * limit Integer Maximum number of elements to return (optional)
  * returns List
  **/
-router.get('/', function (req, res, next) {
-    titlesService.titlesGET(req, res)
-        .then(function (response) {
-            utils.writeJson(res, response);
+router.get('/', async function (req, res, next) {
+    if (await utils.isAuthenticated(req)) {
+        titlesService.titlesGET(req, res)
+            .then(function (response) {
+                utils.writeJson(res, response);
         })
         .catch(function (response) {
             utils.writeJson(res, response);
         })
+    } else {
+        res.status(401).json({ error: "Unauthorized" });
+    }
 });
 
 module.exports = router;
