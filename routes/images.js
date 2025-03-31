@@ -18,6 +18,9 @@ router.get("/:titleName", async function (req, res) {
     }
 });
 
+/**
+ * Will not resolve, on purpose to prevent an Image component from being rendered
+ */
 router.get("/", async function (req, res) {
     console.log("Loading state");
 });
