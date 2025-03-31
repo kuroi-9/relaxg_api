@@ -18,4 +18,8 @@ router.get("/:titleName", async function (req, res) {
     }
 });
 
+router.get("/", async function (req, res) {
+    console.log("Loading state");
+});
+
 module.exports = router;
