@@ -2,11 +2,13 @@ FROM node:18-alpine AS base
 
 FROM base AS deps
 WORKDIR /
+RUN npm install --global corepack@latest
+RUN corepack use pnpm@10.14.0
 
-# Install dependencies based on the preferred package manager
-COPY package.json package-lock.json* ./
+# Install dependencies using pnpm
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN \
-  if [ -f package-lock.json ]; then npm ci; \
+  if [ -f pnpm-lock.yaml ]; then pnpm install; \
   else echo "Lockfile not found." && exit 1; \
   fi
 
