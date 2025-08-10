@@ -101,7 +101,7 @@ function writeImage(response, filePath, mimeType = "image/jpeg") {
  * @returns {Promise<boolean>} True if the request is authenticated, false otherwise
  */
 async function isAuthenticated(req) {
-    console.log("Cheking auth...");
+    console.log("Checking auth...");
 
     const url = "https://api.stack-auth.com/api/v1/users/me";
     const headers = {
