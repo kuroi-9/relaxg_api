@@ -58,7 +58,7 @@ function writeJson(response, arg1, arg2) {
     }
     response.writeHead(code, { "Content-Type": "application/json" });
     response.end(payload);
-};
+}
 
 /**
  * Write an image response
@@ -67,11 +67,7 @@ function writeJson(response, arg1, arg2) {
  * filePath String The file path
  * mimeType String The mime type (optional)
  */
-function writeImage (
-    response,
-    filePath,
-    mimeType = "image/jpeg"
-) {
+function writeImage(response, filePath, mimeType = "image/jpeg") {
     const fs = require("fs");
     const path = require("path");
 
@@ -96,7 +92,7 @@ function writeImage (
         response.writeHead(500, { "Content-Type": "text/plain" });
         response.end("Internal Server Error");
     });
-};
+}
 
 /**
  * Check if the request is authenticated
@@ -118,10 +114,10 @@ async function isAuthenticated(req) {
         headers,
     });
 
-    console.log(response.status);
+    console.log("Auth status: " + response.status);
 
-    return (response.status === 200);
-};
+    return response.status === 200;
+}
 
 /**
  * Export the utils
