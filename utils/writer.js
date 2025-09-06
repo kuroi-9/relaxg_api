@@ -71,20 +71,18 @@ function writeImage(response, filePath, mimeType = "image/jpeg") {
     const fs = require("fs");
     const path = require("path");
 
-    console.log(response);
-
-    // Vérifiez que le fichier existe
+    // Verify that the file exists
     if (!fs.existsSync(filePath)) {
         response.writeHead(404, { "Content-Type": "text/plain" });
         response.end("Image not found");
         return;
     }
 
-    // Définir le type MIME et lire le fichier
+    // Define the MIME type and read the file
     response.writeHead(200, { "Content-Type": mimeType });
     const stream = fs.createReadStream(filePath);
 
-    // Transférer le contenu du fichier au client
+    // Transfer the file content to the client
     stream.pipe(response);
 
     stream.on("error", (err) => {

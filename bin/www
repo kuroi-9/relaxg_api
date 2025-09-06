@@ -3,52 +3,52 @@
 /**
  * Module dependencies and variables.
  */
-const app = require('../app');
-const debug = require('debug')('relaxg-api-reworked:server');
-const http = require('http');
-const {WebSocketServer} = require("ws");
-const {Client} = require("ssh2");
-const {neon} = require("@neondatabase/serverless");
+const app = require("../app");
+const debug = require("debug")("relaxg-api-reworked:server");
+const http = require("http");
+const { WebSocketServer } = require("ws");
+const { Client } = require("ssh2");
+const { neon } = require("@neondatabase/serverless");
 const hostIp = process.env.DOCKER_GATEWAY_HOST;
 const hostUser = process.env.HOST_USER_NAME;
 
 /**
  * Get port from environment and store in Express.
  */
-const port = normalizePort(process.env.PORT || '8082');
-app.set('port', port);
+const port = normalizePort(process.env.PORT || "8082");
+app.set("port", port);
 
 /**
  * Create HTTP server and websocket.
  */
 const server = http.createServer(app);
-const websocketServer = new WebSocketServer({server: server});
+const websocketServer = new WebSocketServer({ server: server });
 let intervals = [];
-websocketServer.on('connection', (websocketClient) => {
-    console.log('Client connected to websocket api');
-    websocketClient.send(JSON.stringify('hey there'));
+websocketServer.on("connection", (websocketClient) => {
+    console.log("Client connected to websocket api");
+    websocketClient.send(JSON.stringify("hey there"));
     fetchProgress(websocketClient);
-    let currentInterval = (setInterval(() => {
+    let currentInterval = setInterval(() => {
         fetchProgress(websocketClient);
-        console.log('Active intervals : ' + intervals)
-    }, 10000));
+        console.log("Active intervals : " + intervals);
+    }, 10000);
     intervals.push(currentInterval);
 
-    websocketClient.on('message', (msg) => {
-        console.log('Received message', msg);
-    })
+    websocketClient.on("message", (msg) => {
+        console.log("Received message", msg);
+    });
 
-    websocketClient.on('close', () => {
-        console.log('Client disconnected from websocket api ');
+    websocketClient.on("close", () => {
+        console.log("Client disconnected from websocket api ");
         clearInterval(currentInterval);
         intervals.splice(intervals.indexOf(currentInterval), 1);
-        console.log('Interval ' + currentInterval + ' cleared');
-    })
+        console.log("Interval " + currentInterval + " cleared");
+    });
 
     websocketClient.on("error", (err) => {
         console.log(err.stack);
     });
-})
+});
 
 /**
  * Fetch progress on host
@@ -58,22 +58,32 @@ websocketServer.on('connection', (websocketClient) => {
 function fetchProgress(client, intervalId) {
     const sql = neon(process.env.DATABASE_URL);
     const conn = new Client();
-    conn.on('ready', () => {
-        conn.exec('bash /home/loicd/relax_tools/scripts/fetch_all_jobs_status.sh', (err, stream) => {
-            if (err) throw err;
-            stream.on('close', (code, signal) => {
-                conn.end();
-            }).on('data', async (data) => {
-                client.send(JSON.stringify(data.toString().replaceAll("\n", "").split("|")));
-            }).stderr.on('data', (data) => {
-                console.log('STDERR: ' + data);
-            });
-        });
+    conn.on("ready", () => {
+        conn.exec(
+            "bash /home/loicd/relax_tools/scripts/fetch_all_jobs_status.sh",
+            (err, stream) => {
+                if (err) throw err;
+                stream
+                    .on("close", (code, signal) => {
+                        conn.end();
+                    })
+                    .on("data", async (data) => {
+                        client.send(
+                            JSON.stringify(
+                                data.toString().replaceAll("\n", "").split("|"),
+                            ),
+                        );
+                    })
+                    .stderr.on("data", (data) => {
+                        //console.log('STDERR: ' + data);
+                    });
+            },
+        );
     }).connect({
         host: hostIp,
         port: 22,
         username: hostUser,
-        password: process.env.HOST_USER_PASS
+        password: process.env.HOST_USER_PASS,
     });
 }
 
@@ -88,8 +98,8 @@ function broadcast(data) {
  * Listen on provided port, on all network interfaces.
  */
 server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+server.on("error", onError);
+server.on("listening", onListening);
 
 /**
  * Normalize a port into a number, string, or false.
@@ -115,22 +125,20 @@ function normalizePort(val) {
  */
 
 function onError(error) {
-    if (error.syscall !== 'listen') {
+    if (error.syscall !== "listen") {
         throw error;
     }
 
-    let bind = typeof port === 'string'
-        ? 'Pipe ' + port
-        : 'Port ' + port;
+    let bind = typeof port === "string" ? "Pipe " + port : "Port " + port;
 
     // handle specific listen errors with friendly messages
     switch (error.code) {
-        case 'EACCES':
-            console.error(bind + ' requires elevated privileges');
+        case "EACCES":
+            console.error(bind + " requires elevated privileges");
             process.exit(1);
             break;
-        case 'EADDRINUSE':
-            console.error(bind + ' is already in use');
+        case "EADDRINUSE":
+            console.error(bind + " is already in use");
             process.exit(1);
             break;
         default:
@@ -144,10 +152,8 @@ function onError(error) {
 
 function onListening() {
     let addr = server.address();
-    let bind = typeof addr === 'string'
-        ? 'pipe ' + addr
-        : 'port ' + addr.port;
-    debug('Listening on ' + bind);
+    let bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
+    debug("Listening on " + bind);
 }
 
-module.exports = {websocketServer, broadcast};
+module.exports = { websocketServer, broadcast };
